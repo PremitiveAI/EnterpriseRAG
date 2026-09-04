@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/*
+ * EnterpriseRAG design tokens.
+ * Source: stitch_documind_ai_interface/cognitive_enterprise/DESIGN.md
+ * Conflicts resolved in docs/architecture/decisions/ADR-008-design-system-resolution.md
+ */
+@theme {
+  /* --- Primary. #15157d is the anchor; #2e3192 is its container/hover tone. --- */
+  --color-primary: #15157d;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #2e3192;
+  --color-on-primary-container: #9da1ff;
+  --color-primary-fixed: #e1e0ff;
+  --color-primary-fixed-dim: #c0c1ff;
+  --color-on-primary-fixed: #04006d;
+  --color-on-primary-fixed-variant: #373a9b;
+  --color-inverse-primary: #c0c1ff;
+
+  --color-secondary: #505f76;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d0e1fb;
+  --color-on-secondary-container: #54647a;
+  --color-secondary-fixed: #d3e4fe;
+  --color-secondary-fixed-dim: #b7c8e1;
+  --color-on-secondary-fixed: #0b1c30;
+  --color-on-secondary-fixed-variant: #38485d;
+
+  --color-tertiary: #002c42;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #004362;
+  --color-on-tertiary-container: #32b4f9;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-surface: #f7f9fb;
+  --color-surface-dim: #d8dadc;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+  --color-surface-variant: #e0e3e5;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #464652;
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #eff1f3;
+  --color-outline: #777683;
+  --color-outline-variant: #c7c5d4;
+  --color-background: #f7f9fb;
+  --color-on-background: #191c1e;
+  --color-surface-tint: #4f54b4;
+
+  /* --- Status tokens. The Stitch dashboard hard-codes these; one pair per
+         document status so a chip never carries a literal hex. --- */
+  --color-status-completed-bg: #dcfce7;
+  --color-status-completed-fg: #166534;
+  --color-status-processing-bg: #d3e4fe;
+  --color-status-processing-fg: #38485d;
+  --color-status-queued-bg: #e6e8ea;
+  --color-status-queued-fg: #464652;
+  --color-status-failed-bg: #ffdad6;
+  --color-status-failed-fg: #93000a;
+  --color-status-duplicate-bg: #fef3c7;
+  --color-status-duplicate-fg: #92400e;
+  --color-status-deleted-bg: #eceef0;
+  --color-status-deleted-fg: #777683;
+
+  /* --- Spacing: 4px baseline --- */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+}
+
+/*
+ * ADR-008: fully rounded everywhere.
+ *
+ * CSS clamps overlapping radii — a radius larger than half the box scales all
+ * radii down proportionally (CSS Backgrounds & Borders §5.5) — so a tall card
+ * renders as a stadium rather than breaking. Tall containers therefore need
+ * extra horizontal padding so content clears the curve, and any container with
+ * a table inside needs overflow-hidden.
+ */
+@theme {
+  --radius-sm: 9999px;
+  --radius-DEFAULT: 9999px;
+  --radius-md: 9999px;
+  --radius-lg: 9999px;
+  --radius-xl: 9999px;
+  --radius-2xl: 9999px;
+  --radius-3xl: 9999px;
+  --radius-full: 9999px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus must always be visible — the Stitch output has no focus styling. */
+/* :focus-visible { */
+/* outline: 2px solid var(--color-primary); */
+/* outline-offset: 2px; */
+/* } */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DocIntelligence - AI Chat / RAG Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#004c6e",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface": "#f7f9fb",
+                      "secondary-fixed": "#d3e4fe",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#464652",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#001e2f",
+                      "surface-variant": "#e0e3e5",
+                      "primary": "#15157d",
+                      "outline-variant": "#c7c5d4",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#c0c1ff",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#002c42",
+                      "secondary": "#505f76",
+                      "on-primary": "#ffffff",
+                      "inverse-surface": "#2d3133",
+                      "surface-bright": "#f7f9fb",
+                      "surface-container-high": "#e6e8ea",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "primary-container": "#2e3192",
+                      "on-secondary-fixed": "#0b1c30",
+                      "tertiary-container": "#004362",
+                      "background": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#89ceff",
+                      "surface-dim": "#d8dadc",
+                      "on-background": "#191c1e",
+                      "on-surface": "#191c1e",
+                      "inverse-on-surface": "#eff1f3",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "tertiary-fixed": "#c9e6ff",
+                      "surface-container": "#eceef0",
+                      "secondary-container": "#d0e1fb",
+                      "on-primary-fixed-variant": "#373a9b",
+                      "outline": "#777683",
+                      "surface-tint": "#4f54b4",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#e1e0ff",
+                      "on-primary-container": "#9da1ff",
+                      "on-secondary-container": "#54647a",
+                      "on-primary-fixed": "#04006d",
+                      "on-tertiary-container": "#32b4f9",
+                      "surface-container-low": "#f2f4f6",
+                      "secondary-fixed-dim": "#b7c8e1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "md": "16px",
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "margin-desktop": "48px",
+                      "lg": "24px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom Scrollbar for Chat History */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background: theme('colors.outline');
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen w-full overflow-hidden flex font-body-md text-body-md">
+<!-- Sidebar: Derived from Shared Components JSON & Specialized for Chat -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest border-r border-outline-variant flex flex-col z-20 transition-transform duration-300 md:translate-x-0 -translate-x-full">
+<!-- Sidebar Header (Brand & Chat Nav) -->
+<div class="p-lg flex flex-col gap-md shrink-0 border-b border-outline-variant">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+<span class="material-symbols-outlined text-lg" data-icon="corporate_fare" data-weight="fill" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary truncate leading-tight text-[18px]">Enterprise AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate text-[12px]">RAG Knowledge Base</p>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary h-10 rounded-lg flex items-center justify-center gap-sm font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                New Chat
+            </button>
+<!-- Global Nav Tabs (Hidden on small screens, minimal here) -->
+<nav class="flex flex-col gap-xs mt-sm">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary font-bold bg-secondary-container transition-transform duration-150 scale-[0.98]" href="#">
+<span class="material-symbols-outlined icon-filled" data-icon="forum" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-label-md text-label-md">Chat</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+</nav>
+</div>
+<!-- Chat History Section -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-md flex flex-col gap-md">
+<!-- Search History -->
+<div class="relative w-full shrink-0">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[18px]" data-icon="search">search</span>
+<input class="w-full h-8 pl-xl pr-sm bg-surface-container-low border-none rounded-full font-body-sm text-body-sm text-on-surface placeholder-on-surface-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-all" placeholder="Search chats..." type="text"/>
+</div>
+<!-- History Groups -->
+<div class="flex flex-col gap-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider px-sm mt-sm">Today</h3>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface" href="#">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Employee Onboarding Docs</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Q4 Financial Summary</span>
+</a>
+</div>
+<div class="flex flex-col gap-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider px-sm mt-sm">Yesterday</h3>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">IT Security Audit 2023</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Project Phoenix Timeline</span>
+</a>
+</div>
+<div class="flex flex-col gap-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider px-sm mt-sm">Previous 7 Days</h3>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Marketing Strategy Q1</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Vendor Contracts Analysis</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-2 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-body-sm text-body-sm truncate flex-1">Leave Policy Updates</span>
+</a>
+</div>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-md border-t border-outline-variant shrink-0 mt-auto">
+<div class="flex flex-col gap-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Help</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-error hover:bg-error-container hover:text-on-error-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col h-full md:ml-[280px] bg-surface relative w-full">
+<!-- Mobile Header (Visible only on small screens) -->
+<header class="md:hidden flex items-center justify-between p-md border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md-mobile font-semibold text-primary">AI Chat</h2>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate employee on a plain background, bright lighting, high quality, realistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLuwjJvC-Jx7uJB5pmoTtRxNGxNT9BRDV5YoZsBKYPxHzTumCYCshgTOEpNNuOf3l3F24iOeRMNaeVH3nP_L24ELLLOz7SBrVhYKXguN6G4D9ucf8K8hkdah4MzFYQdoxgnyuqxcF6u8fhHOGABH3tI1Crx_SMk3-kQ9Fzn1RNwr_6_Nrrl9ix4Rvg4Uk6PuHkunxPVTHOg5JWHStW2_r0V-raMkHahmRJS7_DFzfz5xQF-GNLmHkU"/>
+</div>
+</header>
+<!-- Chat Header (Desktop) -->
+<header class="hidden md:flex justify-between items-center w-full px-lg h-16 border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<h2 class="font-headline-md text-headline-md font-semibold text-primary">AI Document Assistant</h2>
+<div class="flex items-center gap-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden ml-sm cursor-pointer hover:ring-2 ring-primary transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate employee on a plain background, bright lighting, high quality, realistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqZnliLamOyICUyKmNm7G36OV6pEzMRF5OqKLfB8bG9hCCUwEsUSKO3_Uwnoyi1tyH_VFa8gfKAppiNGq8WjIzxLwrcTAkTvWDLyYxZDV_3Ij0-WzBiVvWaEKosJi6axOx7ksqlF7FRuNgXmYGrh8fUDquqYPajyiGzhIkh4M5KqI09OqHCfu61XHuOTQRpHXJODzT78fq9gTNIR1gMl-FUUWogZrcuNHax_Uejx-3-QzGXDJZkL1v"/>
+</div>
+</div>
+</header>
+<!-- Chat Canvas -->
+<div class="flex-1 overflow-y-auto p-4 md:p-lg flex flex-col items-center">
+<div class="w-full max-w-[800px] flex flex-col gap-xl pb-[120px]">
+<!-- Initial Welcome / Empty State (Hidden in this active flow, but kept for structure) -->
+<!--
+                <div class="flex flex-col items-center justify-center text-center mt-20 opacity-50">
+                    <span class="material-symbols-outlined text-[64px] text-primary mb-md" data-icon="robot">robot</span>
+                    <h3 class="font-headline-lg text-headline-lg text-on-surface">How can I help you today?</h3>
+                </div>
+                -->
+<!-- User Message -->
+<div class="flex w-full justify-end">
+<div class="bg-surface-container-high text-on-surface max-w-[80%] md:max-w-[70%] p-md rounded-2xl rounded-tr-sm shadow-sm relative">
+<p class="font-body-md text-body-md leading-relaxed whitespace-pre-wrap">What documents are required for employee onboarding?</p>
+</div>
+</div>
+<!-- AI Response -->
+<div class="flex w-full justify-start gap-md">
+<!-- AI Avatar -->
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0 shadow-sm mt-1">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_awesome" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-sm max-w-[90%] md:max-w-[80%]">
+<div class="bg-surface-container-lowest border border-tertiary-container/20 text-on-surface p-md rounded-2xl rounded-tl-sm shadow-sm relative">
+<p class="font-body-md text-body-md leading-relaxed text-on-surface">Based on the company policies retrieved from the knowledge base, the standard required documents for new employee onboarding include:</p>
+<ul class="list-disc list-inside mt-sm font-body-md text-body-md text-on-surface-variant space-y-1 ml-sm">
+<li>Valid ID proof (Passport, Driver's License, or National ID)</li>
+<li>Address proof (Recent utility bill or rental agreement)</li>
+<li>Completed W-4 Tax forms (or regional equivalent)</li>
+<li>Signed non-disclosure agreement (NDA)</li>
+<li>Direct deposit authorization form</li>
+</ul>
+<p class="font-body-md text-body-md leading-relaxed text-on-surface mt-sm">Please let me know if you need specific details about any of these requirements.</p>
+</div>
+<!-- Source References (RAG specifics) -->
+<div class="flex flex-col gap-xs mt-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="manage_search">manage_search</span>
+                                 Sources
+                             </span>
+<div class="flex flex-wrap gap-sm">
+<!-- Source Card 1 -->
+<button class="flex items-center gap-xs px-sm py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer shadow-sm">
+<span class="material-symbols-outlined text-error text-[16px]" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">Employee Handbook.pdf</span>
+<span class="font-label-sm text-label-sm text-outline ml-xs bg-surface-container px-1.5 py-0.5 rounded">Page 4</span>
+</button>
+<!-- Source Card 2 -->
+<button class="flex items-center gap-xs px-sm py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer shadow-sm">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="description">description</span>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">HR Onboarding Policy.docx</span>
+<span class="font-label-sm text-label-sm text-outline ml-xs bg-surface-container px-1.5 py-0.5 rounded">Sec 2</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area (Fixed Bottom) -->
+<div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface via-surface to-transparent pt-xl pb-md px-4 md:px-lg flex justify-center z-10 pointer-events-none">
+<div class="w-full max-w-[800px] pointer-events-auto">
+<div class="relative bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200">
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md text-on-surface placeholder-on-surface-variant p-md pr-xl max-h-[150px] min-h-[56px] rounded-2xl custom-scrollbar" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 150) + 'px'" placeholder="Ask about your documents..." rows="1" style="overflow-y: hidden;"></textarea>
+<div class="absolute right-sm bottom-sm flex items-center gap-xs">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center" title="Attach file">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<button class="w-8 h-8 md:w-10 md:h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined text-[20px]" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<div class="text-center mt-xs">
+<span class="font-label-sm text-label-sm text-outline text-[11px]">AI can make mistakes. Verify important information from sources.</span>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload - DocIntelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#004c6e",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#464652",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001e2f",
+                        "surface-variant": "#e0e3e5",
+                        "primary": "#15157d",
+                        "outline-variant": "#c7c5d4",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#c0c1ff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#002c42",
+                        "secondary": "#505f76",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "primary-container": "#2e3192",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-container": "#004362",
+                        "background": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#89ceff",
+                        "surface-dim": "#d8dadc",
+                        "on-background": "#191c1e",
+                        "on-surface": "#191c1e",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "tertiary-fixed": "#c9e6ff",
+                        "surface-container": "#eceef0",
+                        "secondary-container": "#d0e1fb",
+                        "on-primary-fixed-variant": "#373a9b",
+                        "outline": "#777683",
+                        "surface-tint": "#4f54b4",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#e1e0ff",
+                        "on-primary-container": "#9da1ff",
+                        "on-secondary-container": "#54647a",
+                        "on-primary-fixed": "#04006d",
+                        "on-tertiary-container": "#32b4f9",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed-dim": "#b7c8e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "margin-desktop": "48px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest border-r border-outline-variant flex flex-col p-lg overflow-y-auto hidden md:flex">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-headline-md shrink-0">
+                E
+            </div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Enterprise AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">RAG Knowledge Base</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-lg hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+            New Chat
+        </button>
+<nav class="flex-1 flex flex-col gap-sm">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold bg-secondary-container scale-[0.98] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+<span class="font-label-md text-label-md">Upload</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">forum</span>
+<span class="font-label-md text-label-md">Chat</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-sm border-t border-outline-variant pt-lg">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-md text-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-h-screen md:ml-[280px]">
+<!-- TopNavBar -->
+<header class="bg-surface docked full-width top-0 border-b border-outline-variant flex justify-between items-center w-full px-lg h-16">
+<div class="flex items-center gap-lg">
+<div class="font-headline-md text-headline-md font-bold text-primary">DocIntelligence</div>
+<!-- Search Bar (on_left) -->
+<div class="relative hidden sm:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-[16px] pl-10 pr-4 py-2 text-body-md focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim outline-none transition-all" placeholder="Search..." type="text"/>
+</div>
+</div>
+<nav class="hidden lg:flex items-center gap-md">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low px-3 py-2 rounded-md transition-all" href="#">Recent</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low px-3 py-2 rounded-md transition-all" href="#">Pinned</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low px-3 py-2 rounded-md transition-all" href="#">Shared</a>
+</nav>
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<div class="w-9 h-9 rounded-full bg-secondary-container overflow-hidden shrink-0 border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa1aRs24qGrb7lHedjL3evITmkz2eNEApVQWXYpaHisR6ih4JDmOWZmoiz2Rr6lLJy8kkvvgQK9BdxWw-5PN9wJO1ZKFt_xbav24qS11Sa4DQaYy6VxcIQzxrAJVlUPrBOUBQDfAGaCyE1XesW4mRbvKghZnAC1EBl064wPMO25CsaVdPbs3BTaCu3uHLAjSZ2yloUYoeMY3AVlvNgTxWItReS3O2XMlpK2n2-lSA7VTNIneHeU9Fr"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 p-margin-desktop overflow-y-auto">
+<div class="max-w-4xl mx-auto space-y-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-2">Upload Documents</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Add new files to your knowledge base to improve AI context.</p>
+</div>
+<!-- Dropzone -->
+<div class="relative group border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest hover:bg-surface-container-low hover:border-primary transition-all duration-200 cursor-pointer p-xl text-center">
+<div class="absolute inset-0 bg-primary/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+<div class="flex justify-center gap-sm mb-lg text-outline">
+<span class="material-symbols-outlined text-[32px]">picture_as_pdf</span>
+<span class="material-symbols-outlined text-[32px]">description</span>
+<span class="material-symbols-outlined text-[32px]">slideshow</span>
+<span class="material-symbols-outlined text-[32px]">article</span>
+<span class="material-symbols-outlined text-[32px]">image</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-background mb-xs">Drag &amp; drop files here</h3>
+<p class="font-body-md text-body-md text-primary mb-md">or click to browse</p>
+<div class="inline-flex flex-col gap-1 items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full">Supported: PDF, DOCX, PPT, TXT, Images</span>
+<span class="font-label-sm text-label-sm text-outline">Max size: 20MB (Docs) / 2MB (Images)</span>
+</div>
+</div>
+<!-- Selected Files List -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-md uppercase tracking-wider">Selected Files (3)</h4>
+<ul class="flex flex-col gap-xs">
+<!-- Valid File 1 -->
+<li class="flex items-center gap-md p-sm rounded-lg hover:bg-surface-container-low transition-colors group">
+<div class="w-10 h-10 rounded bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md text-on-background truncate">Q3_Financial_Report.pdf</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-label-md">2.4 MB</p>
+</div>
+<div class="flex items-center gap-md shrink-0">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Ready
+                                </span>
+<button class="text-outline hover:text-error transition-colors p-1 rounded-md hover:bg-surface-container-high opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</li>
+<!-- Valid File 2 -->
+<li class="flex items-center gap-md p-sm rounded-lg hover:bg-surface-container-low transition-colors group border-t border-outline-variant">
+<div class="w-10 h-10 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md text-on-background truncate">Project_Alpha_Specs.docx</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-label-md">845 KB</p>
+</div>
+<div class="flex items-center gap-md shrink-0">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Ready
+                                </span>
+<button class="text-outline hover:text-error transition-colors p-1 rounded-md hover:bg-surface-container-high opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</li>
+<!-- Invalid File -->
+<li class="flex items-center gap-md p-sm rounded-lg bg-error-container/30 border border-error-container hover:bg-error-container/50 transition-colors group">
+<div class="w-10 h-10 rounded bg-surface-container-highest text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md text-on-background truncate">Architecture_Diagrams_V2_FINAL.pdf</p>
+<p class="font-label-sm text-label-sm text-error font-label-md">24.5 MB</p>
+</div>
+<div class="flex items-center gap-md shrink-0">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-2 py-1 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                    File too large
+                                </span>
+<button class="text-error hover:bg-error-container/80 transition-colors p-1 rounded-md">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</li>
+</ul>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-end gap-md pt-lg">
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low transition-colors">
+                        Cancel
+                    </button>
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md text-on-primary bg-primary hover:bg-primary/90 transition-colors shadow-sm">
+                        Upload Documents
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

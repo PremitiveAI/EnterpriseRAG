@@ -1,0 +1,1808 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EnterpriseRAG — How the data flows</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --bg2: #0f172a;
+        --panel: #121a2e;
+        --panel2: #182238;
+        --line: #233049;
+        --line2: #2c3b58;
+        --tx: #e8edf7;
+        --tx2: #9fb0cd;
+        --tx3: #6f83a5;
+        --a: #6ea8fe; /* blue  - transport */
+        --b: #7bdcb5; /* green - success   */
+        --c: #f7b955; /* amber - AI        */
+        --d: #f2789a; /* pink  - vectors   */
+        --e: #b79cff; /* violet- storage   */
+        --r: 14px;
+        --mono:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(
+            1200px 600px at 15% -10%,
+            #1a2542 0%,
+            transparent 60%
+          ),
+          radial-gradient(900px 500px at 100% 0%, #17203a 0%, transparent 55%),
+          var(--bg);
+        color: var(--tx);
+        font:
+          15px/1.6 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* ---------- progress + nav ---------- */
+      #bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 0;
+        background: linear-gradient(90deg, var(--a), var(--d));
+        z-index: 60;
+        transition: width 0.1s linear;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(11, 16, 32, 0.82);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      nav .wrap {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 10px 20px;
+        scrollbar-width: none;
+        justify-content: center;
+      }
+      nav .wrap::-webkit-scrollbar {
+        display: none;
+      }
+      nav a {
+        flex: 0 0 auto;
+        color: var(--tx2);
+        text-decoration: none;
+        font-size: 12.5px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+      nav a:hover {
+        color: var(--tx);
+        background: var(--panel);
+      }
+      nav a.on {
+        color: #0b1020;
+        background: var(--a);
+        font-weight: 650;
+      }
+
+      /* ---------- hero ---------- */
+      header {
+        padding: 64px 0 44px;
+        text-align: center;
+        position: relative; /* anchors the brand logo, top-right */
+      }
+      /* Brand logo — desktop and tablet only. Hidden on phones, where the
+         hero already fills the viewport and a floating mark would collide
+         with the heading. */
+      .brand-logo {
+        position: absolute;
+        top: 18px;
+        right: 20px;
+        display: block;
+        height: 38px;
+        width: auto;
+        opacity: 0.92;
+        transition: opacity 0.25s;
+      }
+      .brand-logo:hover {
+        opacity: 1;
+      }
+      @media (max-width: 767px) {
+        .brand-logo {
+          display: none;
+        }
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: clamp(30px, 5.2vw, 50px);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+      }
+      header h1 span {
+        background: linear-gradient(92deg, var(--a), var(--d) 55%, var(--c));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      header p {
+        max-width: 640px;
+        margin: 0 auto;
+        color: var(--tx2);
+        font-size: 16px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 22px;
+      }
+      .chip {
+        font: 600 11.5px/1 var(--mono);
+        letter-spacing: 0.03em;
+        color: var(--tx2);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 7px 11px;
+        border-radius: 999px;
+      }
+      .cta {
+        margin-top: 26px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      button.run {
+        cursor: pointer;
+        font: 650 14px/1 inherit;
+        color: #0b1020;
+        background: linear-gradient(92deg, var(--a), var(--b));
+        border: 0;
+        padding: 12px 20px;
+        border-radius: 999px;
+      }
+      button.run:hover {
+        filter: brightness(1.08);
+      }
+      button.ghost {
+        cursor: pointer;
+        font: 600 14px/1 inherit;
+        color: var(--tx2);
+        background: transparent;
+        border: 1px solid var(--line2);
+        padding: 12px 18px;
+        border-radius: 999px;
+      }
+      button.ghost:hover {
+        color: var(--tx);
+      }
+
+      /* ---------- sections ---------- */
+      section {
+        padding: 44px 0;
+        border-top: 1px solid var(--line);
+      }
+      .head {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+      .num {
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font: 700 14px/1 var(--mono);
+        color: #0b1020;
+        background: var(--a);
+      }
+      .s2 .num {
+        background: var(--c);
+      }
+      .s3 .num {
+        background: var(--c);
+      }
+      .s4 .num {
+        background: var(--b);
+      }
+      .s5 .num {
+        background: var(--e);
+      }
+      .s6 .num {
+        background: var(--a);
+      }
+      .s7 .num {
+        background: var(--d);
+      }
+      .s8 .num {
+        background: var(--c);
+      }
+      .s9 .num {
+        background: var(--b);
+      }
+      h2 {
+        margin: 2px 0 0;
+        font-size: 23px;
+        letter-spacing: -0.01em;
+      }
+      .sub {
+        color: var(--tx2);
+        margin: 6px 0 22px 48px;
+        max-width: 70ch;
+      }
+      @media (max-width: 640px) {
+        .sub {
+          margin-left: 0;
+        }
+      }
+
+      .card {
+        background: linear-gradient(180deg, var(--panel), var(--panel2));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 20px;
+      }
+      .grid2 {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1.35fr 0.85fr;
+      }
+      @media (max-width: 860px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* facts list */
+      .facts {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      .facts li {
+        display: flex;
+        gap: 9px;
+        font-size: 13.5px;
+        color: var(--tx2);
+      }
+      .facts b {
+        color: var(--tx);
+        font-weight: 600;
+      }
+      .facts .k {
+        flex: 0 0 auto;
+        color: var(--a);
+        font: 700 12px/1.5 var(--mono);
+      }
+      code {
+        font: 600 12.5px/1.5 var(--mono);
+        background: #0d1424;
+        border: 1px solid var(--line);
+        padding: 1px 6px;
+        border-radius: 6px;
+        color: #cfe0ff;
+      }
+
+      /* ---------- flow rail (generic) ---------- */
+      .rail {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 6px 2px 12px;
+        scrollbar-width: thin;
+      }
+      .node {
+        flex: 0 0 auto;
+        min-width: 104px;
+        text-align: center;
+        background: #0e1626;
+        border: 1px solid var(--line2);
+        border-radius: 12px;
+        padding: 12px 10px;
+        opacity: 0.45;
+        transform: translateY(4px);
+        transition: 0.45s;
+      }
+      .node .ic {
+        font-size: 19px;
+        line-height: 1;
+      }
+      .node .nm {
+        font-size: 11.5px;
+        margin-top: 6px;
+        color: var(--tx2);
+      }
+      .node.lit {
+        opacity: 1;
+        transform: none;
+        border-color: var(--a);
+        box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.13);
+      }
+      .node.done {
+        opacity: 1;
+        border-color: var(--b);
+      }
+      .node.done .nm {
+        color: var(--tx);
+      }
+      .link {
+        flex: 0 0 auto;
+        position: relative;
+        width: 38px;
+        height: 2px;
+        background: var(--line2);
+        margin: 0 2px;
+      }
+      .link i {
+        position: absolute;
+        top: -3px;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--a);
+        opacity: 0;
+        box-shadow: 0 0 10px var(--a);
+      }
+      .link.go i {
+        animation: zip 0.55s linear;
+      }
+      @keyframes zip {
+        0% {
+          left: 0;
+          opacity: 1;
+        }
+        100% {
+          left: 34px;
+          opacity: 0;
+        }
+      }
+
+      /* ---------- upload viz ---------- */
+      .gates {
+        display: grid;
+        gap: 8px;
+      }
+      .gate {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #0e1626;
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        opacity: 0.5;
+        transition: 0.35s;
+      }
+      .gate .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--line2);
+        flex: 0 0 auto;
+      }
+      .gate.ok {
+        opacity: 1;
+        border-color: rgba(123, 220, 181, 0.5);
+      }
+      .gate.ok .dot {
+        background: var(--b);
+        box-shadow: 0 0 8px var(--b);
+      }
+      .gate .tag {
+        margin-left: auto;
+        font: 600 11px/1 var(--mono);
+        color: var(--tx3);
+      }
+
+      /* ---------- chunking viz ---------- */
+      .doc {
+        position: relative;
+        height: 170px;
+        background: #0d1424;
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        padding: 12px;
+        overflow: hidden;
+      }
+      .ln {
+        height: 7px;
+        border-radius: 4px;
+        background: #1b2740;
+        margin-bottom: 8px;
+      }
+      .chunks {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
+      .ck {
+        flex: 1 1 120px;
+        background: #0e1626;
+        border: 1px solid var(--line2);
+        border-left: 3px solid var(--c);
+        border-radius: 8px;
+        padding: 9px 10px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 0.4s;
+      }
+      .ck.in {
+        opacity: 1;
+        transform: none;
+      }
+      .ck .t {
+        font: 700 10.5px/1 var(--mono);
+        color: var(--c);
+      }
+      .ck .b {
+        height: 5px;
+        background: #1b2740;
+        border-radius: 3px;
+        margin-top: 7px;
+      }
+      .ck .ov {
+        margin-top: 7px;
+        font: 600 10px/1 var(--mono);
+        color: var(--tx3);
+      }
+
+      /* ---------- embedding viz ---------- */
+      .vec {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+        gap: 4px;
+        margin-top: 12px;
+      }
+      .vec span {
+        height: 22px;
+        border-radius: 4px;
+        background: #16203a;
+        font: 600 9px/22px var(--mono);
+        text-align: center;
+        color: #8fa6cc;
+        opacity: 0;
+        transform: scale(0.7);
+        transition: 0.3s;
+      }
+      .vec span.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* ---------- qdrant viz ---------- */
+      .space {
+        position: relative;
+        height: 200px;
+        background: radial-gradient(
+          420px 200px at 50% 50%,
+          #14203a 0%,
+          #0d1424 70%
+        );
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .pt {
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--e);
+        opacity: 0;
+        transform: scale(0.4);
+        transition: 0.5s;
+      }
+      .pt.in {
+        opacity: 0.85;
+        transform: none;
+      }
+      .pt.hit {
+        background: var(--b);
+        box-shadow:
+          0 0 0 4px rgba(123, 220, 181, 0.2),
+          0 0 14px var(--b);
+        opacity: 1;
+      }
+      .pt.q {
+        background: var(--d);
+        width: 13px;
+        height: 13px;
+        box-shadow:
+          0 0 0 6px rgba(242, 120, 154, 0.15),
+          0 0 18px var(--d);
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--tx2);
+      }
+      .legend i {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+
+      /* ---------- scored results ---------- */
+      .hits {
+        display: grid;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .hit {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #0e1626;
+        border: 1px solid var(--line2);
+        border-radius: 9px;
+        padding: 9px 11px;
+        font-size: 12.5px;
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: 0.35s;
+      }
+      .hit.in {
+        opacity: 1;
+        transform: none;
+      }
+      .hit .sc {
+        font: 700 11px/1 var(--mono);
+        color: var(--b);
+        flex: 0 0 auto;
+      }
+      .hit .nm {
+        color: var(--tx2);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .hit .meter {
+        flex: 1;
+        height: 5px;
+        background: #1b2740;
+        border-radius: 3px;
+        overflow: hidden;
+        min-width: 40px;
+      }
+      .hit .meter i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--a), var(--b));
+        transition: 0.6s;
+      }
+      .hit.cut {
+        border-style: dashed;
+        opacity: 0.45;
+      }
+      .hit.cut .sc {
+        color: var(--tx3);
+      }
+
+      /* ---------- prompt viz ---------- */
+      .prompt {
+        background: #0d1424;
+        border: 1px solid var(--line2);
+        border-radius: 10px;
+        padding: 14px;
+        font: 12.5px/1.7 var(--mono);
+        color: var(--tx2);
+      }
+      .prompt .seg {
+        opacity: 0;
+        transform: translateY(6px);
+        transition: 0.4s;
+        padding: 6px 9px;
+        border-radius: 7px;
+        margin-bottom: 6px;
+        border-left: 3px solid var(--line2);
+      }
+      .prompt .seg.in {
+        opacity: 1;
+        transform: none;
+      }
+      .prompt .seg.rule {
+        border-left-color: var(--d);
+        background: rgba(242, 120, 154, 0.07);
+      }
+      .prompt .seg.psg {
+        border-left-color: var(--b);
+        background: rgba(123, 220, 181, 0.06);
+      }
+      .prompt .seg.q {
+        border-left-color: var(--a);
+        background: rgba(110, 168, 254, 0.07);
+      }
+      .prompt .seg.lock {
+        border-left-color: var(--c);
+        background: rgba(247, 185, 85, 0.07);
+      }
+      .prompt .lbl {
+        color: var(--tx3);
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* ---------- answer ---------- */
+      .answer {
+        background: #0d1424;
+        border: 1px solid var(--line2);
+        border-left: 3px solid var(--b);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+      .answer .txt {
+        min-height: 44px;
+      }
+      .cursor {
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background: var(--b);
+        vertical-align: -2px;
+        animation: blink 0.9s steps(2) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .srcs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .src {
+        font: 600 11px/1 var(--mono);
+        color: var(--tx2);
+        background: #111b2e;
+        border: 1px solid var(--line2);
+        padding: 7px 10px;
+        border-radius: 8px;
+        opacity: 0;
+        transform: translateY(5px);
+        transition: 0.35s;
+      }
+      .src.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* ---------- callouts ---------- */
+      .note {
+        margin-top: 14px;
+        border-left: 3px solid var(--c);
+        background: rgba(247, 185, 85, 0.07);
+        padding: 11px 14px;
+        border-radius: 0 9px 9px 0;
+        font-size: 13px;
+        color: var(--tx2);
+      }
+      .note b {
+        color: var(--tx);
+      }
+      .note.good {
+        border-left-color: var(--b);
+        background: rgba(123, 220, 181, 0.07);
+      }
+      .note.warn {
+        border-left-color: var(--d);
+        background: rgba(242, 120, 154, 0.08);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      footer {
+        padding: 44px 0 70px;
+        color: var(--tx3);
+        font-size: 13px;
+        border-top: 1px solid var(--line);
+      }
+      footer a {
+        color: var(--a);
+        text-decoration: none;
+      }
+      /* The whole line is the link, not just a word inside it. */
+      footer .credit {
+        display: block;
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        text-align: center;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--tx2);
+        transition: color 0.25s;
+      }
+      footer .credit:hover {
+        color: var(--a);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition-duration: 0.01ms !important;
+        }
+        .reveal,
+        .node,
+        .ck,
+        .vec span,
+        .pt,
+        .hit,
+        .src,
+        .prompt .seg {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script
+      src="http://localhost:3000/widget.js"
+      data-organization="f152d06e-3e0c-48c1-9c21-237892a23245"
+      defer></script>
+
+    <div id="bar"></div>
+
+    <nav>
+      <div class="wrap" id="nav"></div>
+    </nav>
+
+    <header class="wrap">
+      <h1>EnterpriseRAG<br /><span>how the data actually flows</span></h1>
+      <p>
+        From a file dropped in a browser to a grounded answer with citations —
+        traced through this project's real pipeline, with the actual stage
+        names, limits and failure paths.
+      </p>
+      <div class="chips">
+        <span class="chip">FastAPI + Celery</span>
+        <span class="chip">PostgreSQL</span>
+        <span class="chip">Qdrant · 768-d cosine</span>
+        <span class="chip">local embeddings</span>
+        <span class="chip">3 CrewAI agents</span>
+        <span class="chip">multi-tenant</span>
+      </div>
+      <div class="cta">
+        <button class="run" id="runAll">▶ Run the whole flow</button>
+        <button class="ghost" id="resetAll">Reset</button>
+      </div>
+    </header>
+
+    <main class="wrap" id="main">
+      <!-- 1 ------------------------------------------------------------------ -->
+      <section id="s1" class="s1 reveal">
+        <div class="head">
+          <div class="num">1</div>
+          <div><h2>File upload</h2></div>
+        </div>
+        <p class="sub">
+          Nothing is trusted. A file passes four independent gates before a row
+          is written, and the hash is taken before anything is stored — so a
+          duplicate never reaches the queue.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="gates" id="gates">
+              <div class="gate">
+                <span class="dot"></span>Extension allowed<span class="tag"
+                  >pdf docx pptx txt jpg png</span
+                >
+              </div>
+              <div class="gate">
+                <span class="dot"></span>MIME type matches<span class="tag"
+                  >declared vs actual</span
+                >
+              </div>
+              <div class="gate">
+                <span class="dot"></span>Magic bytes match<span class="tag"
+                  >signature check</span
+                >
+              </div>
+              <div class="gate">
+                <span class="dot"></span>Size within limit<span class="tag"
+                  >20 MB doc · 2 MB image</span
+                >
+              </div>
+              <div class="gate">
+                <span class="dot"></span>SHA-256 hash → duplicate check<span
+                  class="tag"
+                  >per organization</span
+                >
+              </div>
+              <div class="gate">
+                <span class="dot"></span>Saved to storage · row created<span
+                  class="tag"
+                  >status QUEUED</span
+                >
+              </div>
+            </div>
+            <div class="note">
+              <b>Why the hash comes first.</b> Duplicate detection is exact-hash
+              at upload time, so an identical re-upload is answered immediately
+              as <code>DUPLICATE</code> instead of spending an OCR and embedding
+              pass to discover the same thing.
+            </div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">MAX</span
+                ><span
+                  >20 files per batch, rate limited at
+                  <b>20 uploads/min</b></span
+                >
+              </li>
+              <li>
+                <span class="k">OUT</span
+                ><span
+                  >Each file returns <b>QUEUED</b>, <b>DUPLICATE</b> or
+                  <b>REJECTED</b> — one batch, three outcomes</span
+                >
+              </li>
+              <li>
+                <span class="k">DB</span
+                ><span
+                  ><code>documents</code> row +
+                  <code>document_processing</code> row</span
+                >
+              </li>
+              <li>
+                <span class="k">NEXT</span
+                ><span
+                  >A Celery task id is handed back so the UI can poll
+                  status</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 ------------------------------------------------------------------ -->
+      <section id="s2" class="s2 reveal">
+        <div class="head">
+          <div class="num">2</div>
+          <div><h2>Document processing</h2></div>
+        </div>
+        <p class="sub">
+          The worker is a separate long-lived process. It walks a fixed state
+          machine, and every stage it enters is written to the database first —
+          so a crash is visible as a stage, not as silence.
+        </p>
+        <div class="card">
+          <div class="rail" id="rail2"></div>
+          <div class="note">
+            <b>OCR is conditional.</b> Text extraction runs first; OCR only
+            engages when a page yields fewer than <code>50</code> characters,
+            which is how a scanned PDF is told apart from a born-digital one
+            without asking the user.
+          </div>
+          <div class="note good">
+            <b>Retries are safe.</b> Point ids are derived from
+            <code>uuid5(document_id : chunk_index)</code>, so a re-run upserts
+            over its own previous output instead of duplicating it.
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 ------------------------------------------------------------------ -->
+      <section id="s3" class="s3 reveal">
+        <div class="head">
+          <div class="num">3</div>
+          <div><h2>Chunking</h2></div>
+        </div>
+        <p class="sub">
+          Text is cut into overlapping windows. The overlap is the point: a
+          sentence that straddles a boundary still appears whole in one of the
+          two neighbours.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="doc" id="doc3"></div>
+            <div class="chunks" id="chunks3"></div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">SIZE</span
+                ><span><b>1000</b> characters per chunk</span>
+              </li>
+              <li>
+                <span class="k">OVER</span
+                ><span><b>150</b> characters of overlap</span>
+              </li>
+              <li>
+                <span class="k">KEEP</span
+                ><span
+                  >page number, section and <code>chunk_index</code> travel with
+                  the text</span
+                >
+              </li>
+              <li>
+                <span class="k">WHY</span
+                ><span
+                  >A citation has to point back at a page — so position is
+                  preserved, not discarded</span
+                >
+              </li>
+            </ul>
+            <div class="note">
+              <b>Without overlap</b> a fact split across a boundary is
+              retrievable from neither half: each fragment on its own is too
+              weak a match to clear the score floor.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 ------------------------------------------------------------------ -->
+      <section id="s4" class="s4 reveal">
+        <div class="head">
+          <div class="num">4</div>
+          <div><h2>Embedding generation</h2></div>
+        </div>
+        <p class="sub">
+          Every chunk becomes 768 numbers. This runs <b>locally</b> — no API
+          call, no key, no per-document cost — which is a deliberate
+          architectural decision, not an optimisation.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div style="font: 12px/1.5 var(--mono); color: var(--tx3)">
+              chunk text
+            </div>
+            <div
+              style="
+                background: #0d1424;
+                border: 1px solid var(--line2);
+                border-radius: 9px;
+                padding: 10px 12px;
+                margin: 7px 0 4px;
+                font-size: 13px;
+                color: var(--tx2);
+              ">
+              “All permanent employees are entitled to twenty-four days of paid
+              annual leave…”
+            </div>
+            <div
+              style="
+                text-align: center;
+                color: var(--b);
+                font-size: 19px;
+                margin: 6px 0;
+              ">
+              ↓
+            </div>
+            <div style="font: 12px/1.5 var(--mono); color: var(--tx3)">
+              768-dimensional vector
+            </div>
+            <div class="vec" id="vec4"></div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">MODEL</span
+                ><span
+                  ><code>all-mpnet-base-v2</code>, sentence-transformers</span
+                >
+              </li>
+              <li>
+                <span class="k">DIM</span
+                ><span><b>768</b>, cosine distance</span>
+              </li>
+              <li>
+                <span class="k">WHERE</span
+                ><span>In the worker process, on CPU</span>
+              </li>
+            </ul>
+            <div class="note good">
+              <b>The consequence people miss.</b> Because retrieval never
+              touches the LLM provider, switching the answering model — Gemini
+              to OpenAI, say — does not invalidate a single vector and needs no
+              re-indexing. The two halves of the system are genuinely
+              independent.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 ------------------------------------------------------------------ -->
+      <section id="s5" class="s5 reveal">
+        <div class="head">
+          <div class="num">5</div>
+          <div><h2>Vector storage</h2></div>
+        </div>
+        <p class="sub">
+          Vectors land in Qdrant — in <b>one collection per organization</b>.
+          Tenant isolation is structural here: a forgotten filter cannot leak
+          across tenants, because the other tenant's data is not in the
+          collection being searched.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="space" id="space5"></div>
+            <div class="legend">
+              <span
+                ><i style="background: var(--e)"></i>stored chunk vector</span
+              >
+              <span><i style="background: var(--b)"></i>match</span>
+              <span><i style="background: var(--d)"></i>query vector</span>
+            </div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">COLL</span
+                ><span><code>org_&lt;uuid without hyphens&gt;</code></span>
+              </li>
+              <li>
+                <span class="k">POINT</span
+                ><span
+                  ><code>uuid5(document_id : chunk_index)</code> —
+                  deterministic</span
+                >
+              </li>
+              <li>
+                <span class="k">LOAD</span
+                ><span
+                  >text, document name, page, category, language, tags,
+                  status</span
+                >
+              </li>
+              <li>
+                <span class="k">FLAG</span
+                ><span
+                  ><code>is_public</code> — what separates the public chatbot's
+                  corpus from the admin's</span
+                >
+              </li>
+            </ul>
+            <div class="note">
+              <b>Two ids on purpose.</b> <code>organization_id</code> is carried
+              in the payload even though the collection already implies it — so
+              an audit can prove a stray point did not arrive from another
+              tenant.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 ------------------------------------------------------------------ -->
+      <section id="s6" class="s6 reveal">
+        <div class="head">
+          <div class="num">6</div>
+          <div><h2>User query</h2></div>
+        </div>
+        <p class="sub">
+          A question arrives on the synchronous request path. Before anything is
+          searched, <b>agent 2</b> rewrites it into a standalone search query
+          and may propose metadata filters.
+        </p>
+        <div class="card">
+          <div class="rail" id="rail6"></div>
+          <div class="grid2" style="margin-top: 14px">
+            <div>
+              <div style="font: 12px/1.5 var(--mono); color: var(--tx3)">
+                asked
+              </div>
+              <div class="prompt" style="margin: 6px 0 12px">
+                <span id="q6"
+                  >“How many days of annual leave do employees get?”</span
+                >
+              </div>
+              <div style="font: 12px/1.5 var(--mono); color: var(--tx3)">
+                rewritten by the query planner
+              </div>
+              <div
+                class="prompt"
+                style="margin-top: 6px; border-color: rgba(110, 168, 254, 0.4)">
+                <span id="q6b" style="color: var(--a)">…</span>
+              </div>
+            </div>
+            <div>
+              <ul class="facts">
+                <li>
+                  <span class="k">CTX</span
+                  ><span>Last <b>6</b> turns of conversation, from Redis</span>
+                </li>
+                <li>
+                  <span class="k">FILT</span
+                  ><span
+                    >Proposed filters are <b>verified against the corpus</b> and
+                    dropped if unverifiable</span
+                  >
+                </li>
+                <li>
+                  <span class="k">FAIL</span
+                  ><span
+                    >If the agent fails, retrieval uses the raw question — a
+                    failed agent never fails a chat</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="note">
+            <b>Why filters get dropped.</b> A filter the corpus cannot satisfy
+            turns a findable answer into an empty result, and an empty result is
+            indistinguishable from “the documents don't say”. So an unverifiable
+            filter is discarded rather than applied.
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 ------------------------------------------------------------------ -->
+      <section id="s7" class="s7 reveal">
+        <div class="head">
+          <div class="num">7</div>
+          <div><h2>Vector search</h2></div>
+        </div>
+        <p class="sub">
+          The rewritten question is embedded by the same local model, then
+          scored against the tenant's collection. Anything below the floor is
+          not “a weak answer” — it is discarded.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="hits" id="hits7"></div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">TOP-K</span
+                ><span><b>5</b> passages (public chatbot: <b>3</b>)</span>
+              </li>
+              <li>
+                <span class="k">FLOOR</span><span>score ≥ <b>0.35</b></span>
+              </li>
+              <li>
+                <span class="k">SCOPE</span
+                ><span
+                  >One collection — the caller's organization, from the
+                  token</span
+                >
+              </li>
+            </ul>
+            <div class="note warn">
+              <b>The floor is what makes refusal possible.</b> With no threshold
+              the nearest chunk always wins, however irrelevant, and the system
+              would answer every question confidently — including the ones the
+              documents cannot answer.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 ------------------------------------------------------------------ -->
+      <section id="s8" class="s8 reveal">
+        <div class="head">
+          <div class="num">8</div>
+          <div><h2>Context + LLM</h2></div>
+        </div>
+        <p class="sub">
+          The prompt is assembled by code, not by the model.
+          <b>Agent 3</b> receives the passages, the grounding rules and a JSON
+          contract — and only the middle part is editable.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="prompt" id="prompt8">
+              <div class="seg q">
+                <span class="lbl">question</span><br />How many days of annual
+                leave do employees get?
+              </div>
+              <div class="seg psg">
+                <span class="lbl">passages · 5 retrieved</span><br />[1] id=a3f…
+                | Leave_Policy.pdf | page 1<br />[2] id=b7c… | Leave_Policy.pdf
+                | page 2
+              </div>
+              <div class="seg rule">
+                <span class="lbl">editable guidance — Super Admin</span
+                ><br />Tone, length, formatting
+              </div>
+              <div class="seg lock">
+                <span class="lbl">🔒 locked — appended by code, always</span
+                ><br />Use ONLY the passages above · Do not invent facts · Cite
+                only ids from the list · Return JSON only
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">MODEL</span
+                ><span
+                  >Resolved from the database per call — switchable with no
+                  restart</span
+                >
+              </li>
+              <li>
+                <span class="k">OUT</span
+                ><span
+                  ><code>{answer, is_grounded, cited_chunk_ids}</code></span
+                >
+              </li>
+              <li>
+                <span class="k">CHECK</span
+                ><span
+                  >Cited ids are intersected with the ids actually
+                  supplied</span
+                >
+              </li>
+            </ul>
+            <div class="note warn">
+              <b>Invented citations are dropped.</b> If the model returns ids
+              that were never given to it, they are removed — and if nothing
+              verifiable remains, the system falls back to a templated answer
+              built from the same passages. That is why an answer can suddenly
+              read as a list of excerpts: the model stopped following the
+              contract.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 ------------------------------------------------------------------ -->
+      <section id="s9" class="s9 reveal">
+        <div class="head">
+          <div class="num">9</div>
+          <div><h2>Answer + sources</h2></div>
+        </div>
+        <p class="sub">
+          The answer is masked for display, persisted, and returned with the
+          sources it actually cited — or refused, which is a first-class outcome
+          rather than an error.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <div class="answer">
+              <div class="txt" id="ans9"><span class="cursor"></span></div>
+              <div class="srcs" id="srcs9"></div>
+            </div>
+            <div class="note good" style="margin-top: 14px">
+              <b>Refusal is a 200, not an error.</b> When nothing clears the
+              floor the reply is
+              <i
+                >“I could not find this information in the available
+                documents”</i
+              >
+              with <code>NO_RELEVANT_CONTEXT</code> — a correct answer about the
+              corpus, recorded as <code>is_grounded = false</code>.
+            </div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">PII</span
+                ><span
+                  >PAN and Aadhaar numbers are masked before display — only
+                  values that <b>validate</b>, so an invoice number is left
+                  intact</span
+                >
+              </li>
+              <li>
+                <span class="k">SAVE</span
+                ><span
+                  >Message, latency, grounding flag and citations are
+                  persisted</span
+                >
+              </li>
+              <li>
+                <span class="k">FLAG</span
+                ><span
+                  ><code>degraded: true</code> when any stage fell back — the
+                  answer is real, the path was reduced</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 ----------------------------------------------------------------- -->
+      <section id="s10" class="s9 reveal">
+        <div class="head">
+          <div class="num">✳</div>
+          <div><h2>What runs where</h2></div>
+        </div>
+        <p class="sub">
+          Two processes, and the split explains most of the design.
+        </p>
+        <div class="grid2">
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">API</span
+                ><span
+                  >Upload validation, chat, retrieval, agents 2 &amp; 3 —
+                  <b>synchronous</b>, latency matters</span
+                >
+              </li>
+              <li>
+                <span class="k">WORKER</span
+                ><span
+                  >Extraction, OCR, enrichment, agent 1, chunking, embedding,
+                  indexing — <b>async</b>, nobody waiting</span
+                >
+              </li>
+              <li>
+                <span class="k">SHARED</span
+                ><span
+                  >PostgreSQL is the source of truth. Redis is a broker and a
+                  cache, never truth</span
+                >
+              </li>
+            </ul>
+            <div class="note">
+              <b>They never coordinate directly.</b> Both read configuration
+              from the database and compare a version integer, which is how a
+              provider switch reaches the worker without a restart or a message
+              bus.
+            </div>
+          </div>
+          <div class="card">
+            <ul class="facts">
+              <li>
+                <span class="k">A1</span
+                ><span
+                  ><b>Identity agent</b> — recognises PAN / Aadhaar from OCR
+                  text (worker)</span
+                >
+              </li>
+              <li>
+                <span class="k">A2</span
+                ><span
+                  ><b>Query planner</b> — rewrites the question, proposes
+                  filters (API)</span
+                >
+              </li>
+              <li>
+                <span class="k">A3</span
+                ><span
+                  ><b>Response composer</b> — writes the grounded answer
+                  (API)</span
+                >
+              </li>
+            </ul>
+            <div class="note good">
+              <b>Every agent has a non-agent fallback.</b> Planner fails →
+              search the raw question. Composer fails → templated answer over
+              the same passages. Identity fails → the document still indexes. A
+              failed agent degrades the result; it never fails the request.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      Generated from the EnterpriseRAG codebase — stage names, limits and
+      thresholds are the ones in
+      <code>settings.py</code>, <code>pipeline_service.py</code> and
+      <code>retrieval_service.py</code>. Static explainer; it makes no network
+      calls and reads nothing live.
+
+      <a class="credit" href="https://premitivekey.com/"
+        >Designed and Developed by Premitive Key</a
+      >
+    </footer>
+
+    <script>
+      (function () {
+        "use strict";
+        const $ = (s, r) => (r || document).querySelector(s);
+        const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+        const reduced = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        const T = (k) => (reduced ? 0 : k);
+
+        /* ---------- nav ---------- */
+        const TITLES = [
+          ["s1", "Upload"],
+          ["s2", "Processing"],
+          ["s3", "Chunking"],
+          ["s4", "Embedding"],
+          ["s5", "Vector store"],
+          ["s6", "Query"],
+          ["s7", "Search"],
+          ["s8", "LLM"],
+          ["s9", "Answer"],
+          ["s10", "Runtime"],
+        ];
+        $("#nav").innerHTML = TITLES.map(
+          ([id, t]) => `<a href="#${id}" data-t="${id}">${t}</a>`,
+        ).join("");
+
+        const onScroll = () => {
+          const h = document.documentElement;
+          $("#bar").style.width =
+            (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + "%";
+          let cur = TITLES[0][0];
+          for (const [id] of TITLES) {
+            const el = document.getElementById(id);
+            if (el && el.getBoundingClientRect().top < 140) cur = id;
+          }
+          $$("#nav a").forEach((a) =>
+            a.classList.toggle("on", a.dataset.t === cur),
+          );
+        };
+        addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+
+        /* ---------- reveal on scroll ---------- */
+        const io = new IntersectionObserver(
+          (es) =>
+            es.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("in");
+                play(e.target.id);
+              }
+            }),
+          { threshold: 0.18 },
+        );
+        $$(".reveal").forEach((el) => io.observe(el));
+
+        /* ---------- build: rails ---------- */
+        function buildRail(el, nodes) {
+          el.innerHTML = nodes
+            .map(
+              (n, i) =>
+                (i ? `<div class="link"><i></i></div>` : "") +
+                `<div class="node"><div class="ic">${n[0]}</div><div class="nm">${n[1]}</div></div>`,
+            )
+            .join("");
+        }
+        buildRail($("#rail2"), [
+          ["📥", "QUEUED"],
+          ["⚙️", "loading"],
+          ["📄", "extracting"],
+          ["🔍", "ocr"],
+          ["🏷️", "classifying"],
+          ["✂️", "chunking"],
+          ["🧮", "embedding"],
+          ["🗄️", "indexing"],
+          ["✅", "COMPLETED"],
+        ]);
+        buildRail($("#rail6"), [
+          ["💬", "question"],
+          ["🕘", "context"],
+          ["🧭", "planner"],
+          ["🧮", "embed"],
+          ["🔎", "search"],
+        ]);
+
+        async function runRail(el) {
+          const nodes = $$(".node", el),
+            links = $$(".link", el);
+          nodes.forEach((n) => n.classList.remove("lit", "done"));
+          for (let i = 0; i < nodes.length; i++) {
+            nodes[i].classList.add("lit");
+            await sleep(T(340));
+            nodes[i].classList.remove("lit");
+            nodes[i].classList.add("done");
+            if (links[i]) {
+              links[i].classList.add("go");
+              setTimeout(() => links[i].classList.remove("go"), 560);
+            }
+            await sleep(T(120));
+          }
+        }
+
+        /* ---------- 1. gates ---------- */
+        async function runGates() {
+          const gs = $$("#gates .gate");
+          gs.forEach((g) => g.classList.remove("ok"));
+          for (const g of gs) {
+            g.classList.add("ok");
+            await sleep(T(260));
+          }
+        }
+
+        /* ---------- 3. chunking ---------- */
+        const doc = $("#doc3");
+        doc.innerHTML = Array.from(
+          { length: 14 },
+          (_, i) =>
+            `<div class="ln" style="width:${[100, 96, 88, 99, 74, 93, 97, 60, 95, 90, 86, 99, 70, 92][i]}%"></div>`,
+        ).join("");
+        $("#chunks3").innerHTML = [1, 2, 3, 4]
+          .map(
+            (i) =>
+              `<div class="ck"><div class="t">chunk ${i}</div><div class="b"></div>
+     <div class="ov">${i < 4 ? "↔ 150 char overlap" : "end of page 1"}</div></div>`,
+          )
+          .join("");
+        async function runChunks() {
+          const cs = $$("#chunks3 .ck");
+          cs.forEach((c) => c.classList.remove("in"));
+          for (const c of cs) {
+            c.classList.add("in");
+            await sleep(T(220));
+          }
+        }
+
+        /* ---------- 4. embedding ---------- */
+        const vec = $("#vec4");
+        const NUM = 48;
+        vec.innerHTML = Array.from({ length: NUM }, () => `<span></span>`).join(
+          "",
+        );
+        async function runVec() {
+          const cells = $$("#vec4 span");
+          cells.forEach((c) => c.classList.remove("in"));
+          for (let i = 0; i < cells.length; i++) {
+            const v = (Math.random() * 2 - 1).toFixed(2);
+            cells[i].textContent = v;
+            cells[i].style.background =
+              v > 0
+                ? `rgba(110,168,254,${0.12 + Math.abs(v) * 0.5})`
+                : `rgba(242,120,154,${0.12 + Math.abs(v) * 0.5})`;
+            cells[i].classList.add("in");
+            if (i % 4 === 0) await sleep(T(38));
+          }
+        }
+
+        /* ---------- 5. vector space ---------- */
+        const space = $("#space5");
+        const PTS = 46;
+        const pts = [];
+        for (let i = 0; i < PTS; i++) {
+          const d = document.createElement("div");
+          d.className = "pt";
+          // cluster loosely so "near" is visually meaningful
+          const cx = [28, 62, 45][i % 3],
+            cy = [35, 60, 48][i % 3];
+          d.style.left =
+            Math.max(3, Math.min(95, cx + (Math.random() * 46 - 23))) + "%";
+          d.style.top =
+            Math.max(6, Math.min(90, cy + (Math.random() * 44 - 22))) + "%";
+          space.appendChild(d);
+          pts.push(d);
+        }
+        const qp = document.createElement("div");
+        qp.className = "pt q";
+        qp.style.left = "46%";
+        qp.style.top = "44%";
+        space.appendChild(qp);
+
+        async function runSpace(withQuery) {
+          pts.forEach((p) => p.classList.remove("in", "hit"));
+          qp.classList.remove("in");
+          for (let i = 0; i < pts.length; i++) {
+            pts[i].classList.add("in");
+            if (i % 3 === 0) await sleep(T(26));
+          }
+          if (!withQuery) return;
+          await sleep(T(420));
+          qp.classList.add("in");
+          await sleep(T(360));
+          // light the five nearest to the query point
+          const qx = 46,
+            qy = 44;
+          pts
+            .map((p) => ({
+              p,
+              d: Math.hypot(
+                parseFloat(p.style.left) - qx,
+                parseFloat(p.style.top) - qy,
+              ),
+            }))
+            .sort((a, b) => a.d - b.d)
+            .slice(0, 5)
+            .forEach((o, i) =>
+              setTimeout(() => o.p.classList.add("hit"), T(i * 130)),
+            );
+        }
+
+        /* ---------- 6. planner ---------- */
+        async function runPlanner() {
+          const el = $("#q6b");
+          el.textContent = "";
+          const s = "annual leave entitlement for employees";
+          if (reduced) {
+            el.textContent = s;
+            return;
+          }
+          for (const ch of s) {
+            el.textContent += ch;
+            await sleep(14);
+          }
+        }
+
+        /* ---------- 7. hits ---------- */
+        const HITS = [
+          [0.571, "Leave_Policy_2025-2026.pdf · p1", false],
+          [0.566, "Leave_Policy_2025-2026.pdf · p2", false],
+          [0.563, "Leave_Policy_2025-2026.pdf · p1", false],
+          [0.498, "HR_Handbook.pdf · p7", false],
+          [0.421, "Onboarding.pdf · p2", false],
+          [0.311, "Portfolio.pdf · p14", true],
+        ];
+        $("#hits7").innerHTML = HITS.map(
+          ([s, n, cut]) =>
+            `<div class="hit${cut ? " cut" : ""}"><span class="sc">${s.toFixed(3)}</span>
+      <span class="meter"><i data-w="${Math.round(s * 100)}"></i></span>
+      <span class="nm">${n}${cut ? " — below 0.35, discarded" : ""}</span></div>`,
+        ).join("");
+        async function runHits() {
+          const hs = $$("#hits7 .hit");
+          hs.forEach((h) => {
+            h.classList.remove("in");
+            $("i", $(".meter", h)).style.width = "0";
+          });
+          for (const h of hs) {
+            h.classList.add("in");
+            const i = $("i", $(".meter", h));
+            i.style.width = i.dataset.w + "%";
+            await sleep(T(180));
+          }
+        }
+
+        /* ---------- 8. prompt ---------- */
+        async function runPrompt() {
+          const segs = $$("#prompt8 .seg");
+          segs.forEach((s) => s.classList.remove("in"));
+          for (const s of segs) {
+            s.classList.add("in");
+            await sleep(T(260));
+          }
+        }
+
+        /* ---------- 9. answer ---------- */
+        const ANSWER =
+          "Permanent employees receive twenty-four days of paid annual leave per calendar year. Leave accrues monthly and unused days may be carried forward for up to six months.";
+        const SOURCES = [
+          "📄 Leave_Policy_2025-2026.pdf · page 1",
+          "📄 Leave_Policy_2025-2026.pdf · page 2",
+        ];
+        async function runAnswer() {
+          const el = $("#ans9"),
+            sr = $("#srcs9");
+          el.innerHTML = "";
+          sr.innerHTML = "";
+          if (reduced) {
+            el.textContent = ANSWER;
+          } else {
+            const cur = document.createElement("span");
+            cur.className = "cursor";
+            el.appendChild(cur);
+            for (const ch of ANSWER) {
+              cur.insertAdjacentText("beforebegin", ch);
+              await sleep(11);
+            }
+            cur.remove();
+          }
+          sr.innerHTML = SOURCES.map(
+            (s) => `<span class="src">${s}</span>`,
+          ).join("");
+          for (const s of $$(".src", sr)) {
+            s.classList.add("in");
+            await sleep(T(140));
+          }
+        }
+
+        /* ---------- dispatch ---------- */
+        const played = new Set();
+        function play(id, force) {
+          if (!force && played.has(id)) return;
+          played.add(id);
+          (
+            ({
+              s1: runGates,
+              s2: () => runRail($("#rail2")),
+              s3: runChunks,
+              s4: runVec,
+              s5: () => runSpace(false),
+              s6: async () => {
+                await runRail($("#rail6"));
+                await runPlanner();
+              },
+              s7: async () => {
+                await runHits();
+                await runSpace(true);
+              },
+              s8: runPrompt,
+              s9: runAnswer,
+            })[id] || (() => {})
+          )();
+        }
+
+        /* ---------- run everything ---------- */
+        let running = false;
+        $("#runAll").addEventListener("click", async () => {
+          if (running) return;
+          running = true;
+          $("#runAll").textContent = "▶ Running…";
+          for (const id of [
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5",
+            "s6",
+            "s7",
+            "s8",
+            "s9",
+          ]) {
+            const el = document.getElementById(id);
+            el.scrollIntoView({
+              behavior: reduced ? "auto" : "smooth",
+              block: "center",
+            });
+            await sleep(T(520));
+            played.delete(id);
+            play(id, true);
+            await sleep(T(1500));
+          }
+          $("#runAll").textContent = "▶ Run the whole flow";
+          running = false;
+        });
+
+        $("#resetAll").addEventListener("click", () => {
+          played.clear();
+          $$("#gates .gate").forEach((g) => g.classList.remove("ok"));
+          $$(".node").forEach((n) => n.classList.remove("lit", "done"));
+          $$(".ck,.src,.hit,.pt,.seg").forEach((x) =>
+            x.classList.remove("in", "hit"),
+          );
+          $$("#vec4 span").forEach((x) => x.classList.remove("in"));
+          $("#ans9").innerHTML = '<span class="cursor"></span>';
+          $("#srcs9").innerHTML = "";
+          $("#q6b").textContent = "…";
+          scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+        });
+      })();
+    </script>
+  </body>
+</html>
