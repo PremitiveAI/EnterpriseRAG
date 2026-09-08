@@ -107,7 +107,13 @@ class ChatService:
             conversation.title = derive_title(question)
         self.db.commit()
 
-        history = [turn.as_dict() for turn in self.context.load(self.organization_id, self.context_subject, conversation.id)]
+        history = [turn.as_dict() for turn in 
+                   self.context.load(
+                       self.organization_id, 
+                       self.context_subject, 
+                       conversation.id
+                    )
+                ]
 
         # 3. Agent 2, but only when there is something for it to do.
         #
@@ -263,11 +269,17 @@ class ChatService:
 
         return _Prepared(conversation=conversation, question=question)
 
+    # def _taxonomy(self) -> list[str]:
+    #     rows = self.db.execute(
+    #         select(DocumentCategory.slug, DocumentCategory.description).where(DocumentCategory.is_active.is_(True))
+    #     ).scalars()
+    #     return list(rows)
     def _taxonomy(self) -> list[str]:
         rows = self.db.execute(
-            select(DocumentCategory.slug).where(DocumentCategory.is_active.is_(True))
-        ).scalars()
-        return list(rows)
+            select(DocumentCategory.slug, DocumentCategory.description)
+            .where(DocumentCategory.is_active.is_(True))
+        ).all()
+        return [f"{row.slug}: {row.description}" for row in rows]
 
     def _refuse(
         self,
